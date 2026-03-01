@@ -7,38 +7,38 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
-    constructor(
-        @InjectRepository(User)
-        private readonly userRepository: Repository<User>
-    ) { }
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const user = this.userRepository.create(createUserDto);
+    console.log(user.fullName());
+    return await this.userRepository.save(user);
+  }
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
-        const user = this.userRepository.create(createUserDto);
-        return await this.userRepository.save(user);
+  async findAll(): Promise<User[]> {
+    return await this.userRepository.find();
+  }
+
+  async findOne(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User not found`);
     }
+    return user;
+  }
 
-    async findAll(): Promise<User[]> {
-        return await this.userRepository.find();
-    }
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+    const updatedUser = Object.assign(user, updateUserDto);
+    return await this.userRepository.save(updatedUser);
+  }
 
-    async findOne(id: string): Promise<User> {
-        const user = await this.userRepository.findOne({ where: { id } });
-        if (!user) {
-            throw new NotFoundException(`User not found`);
-        }
-        return user;
-    }
-
-    async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-        const user = await this.findOne(id);
-        const updatedUser = Object.assign(user, updateUserDto);
-        return await this.userRepository.save(updatedUser);
-    }
-
-    async remove(id: string): Promise<string> {
-        const user = await this.findOne(id);
-        await this.userRepository.remove(user);
-        return `User deleted successfully`;
-    }
+  async remove(id: string): Promise<string> {
+    const user = await this.findOne(id);
+    await this.userRepository.remove(user);
+    return `User deleted successfully`;
+  }
 }
